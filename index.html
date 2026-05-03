@@ -88,7 +88,7 @@
             border: 3px solid var(--cyan); border-radius: 50%; color: var(--cyan); 
             display: flex; justify-content: center; align-items: center; 
             pointer-events: auto; font-size: 2.2rem; 
-            touch-action: none; /* STOPS BROWSER SCROLLING */
+            touch-action: none; 
             backdrop-filter: blur(4px);
         }
         .ctrl-btn:active { background: var(--cyan); color: #000; transform: scale(0.9); }
@@ -231,14 +231,19 @@
     let platforms = [], spikes = [], checkpoints = [], goal = { x: 0, y: 0 }, lastCheck = { x: 100, y: 0 };
     const keys = { left: false, right: false };
 
+    // MOBILE FULLSCREEN FIX
     function toggleFullscreen() {
         const doc = document.documentElement;
-        if (!document.fullscreenElement) {
-            if (doc.requestFullscreen) doc.requestFullscreen();
-            else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
-        } else {
-            if (document.exitFullscreen) document.exitFullscreen();
-        }
+        try {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (doc.requestFullscreen) doc.requestFullscreen();
+                else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen(); // iOS/Safari
+                else if (doc.msRequestFullscreen) doc.msRequestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            }
+        } catch(e) { console.warn("Fullscreen blocked by browser policies."); }
     }
 
     function resize() { 
@@ -253,7 +258,6 @@
         else if(player.canDJ) { player.dy = player.jPower * 0.85; player.canDJ = false; sfx(600, 0.1); }
     }
 
-    // UPDATED CONTROLS LOGIC
     const setupControls = () => {
         const btnL = document.getElementById('btn-left');
         const btnR = document.getElementById('btn-right');
