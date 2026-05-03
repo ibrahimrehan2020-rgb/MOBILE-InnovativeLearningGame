@@ -6,7 +6,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>BRAIN-STORM</title>
-
     <style>
         :root {
             --bg-void: #000000; 
@@ -21,229 +20,84 @@
             --platform-border: #30363d;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background: var(--bg-void); 
+            color: var(--text); 
+            overflow: hidden; 
+            height: 100vh; 
+            width: 100vw; 
+            touch-action: none; 
+            position: fixed; 
+            top: 0; left: 0;
         }
 
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #000;
-        }
-
-        body {
-            background: var(--bg-void);
-            color: var(--text);
-            touch-action: none;
-            position: fixed;
-            inset: 0;
-        }
-
-        body.fake-fullscreen {
-            width: 100vw;
-            height: 100dvh;
-        }
-
-        #canvas-container {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #000;
-        }
-
-        canvas {
-            display: block;
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-        }
-
+        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+        canvas { display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         #bgCanvas { z-index: 1; }
         #gameCanvas { z-index: 2; }
 
-        #ui-layer {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 200;
-            padding: 20px;
+        #ui-layer { position: absolute; inset: 0; pointer-events: none; display: flex; justify-content: center; align-items: center; z-index: 200; padding: 20px; }
+        
+        .screen { 
+            pointer-events: auto; display: none; flex-direction: column; gap: 12px; 
+            background: var(--card-bg); border: 1px solid var(--platform-border); 
+            border-radius: 16px; padding: 25px; width: 95%; max-width: 400px; 
+            backdrop-filter: blur(15px); box-shadow: 0 10px 50px rgba(0,0,0,0.8);
+        }
+        .screen.active { display: flex; animation: slideIn 0.3s ease-out; }
+
+        @keyframes slideIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        h1 { color: var(--cyan); text-align: center; letter-spacing: 2px; text-shadow: 0 0 10px var(--cyan-glow); font-size: 2rem; }
+        h2 { text-align: center; color: var(--cyan); font-size: 1.4rem; }
+        
+        input { 
+            width: 100%; padding: 16px; background: rgba(0, 0, 0, 0.6); 
+            border: 2px solid var(--platform-border); border-radius: 12px; 
+            color: white; font-size: 1.1rem; text-align: center; outline: none;
+        }
+        
+        .btn { 
+            background: var(--cyan); color: #000; border: none; padding: 18px; 
+            border-radius: 12px; font-weight: bold; text-transform: uppercase; 
+            font-size: 1.1rem; cursor: pointer; width: 100%;
+        }
+        .btn-secondary { background: transparent; border: 1px solid var(--platform-border); color: var(--text); padding: 12px; font-size: 0.85rem; }
+
+        #hud { 
+            position: absolute; top: env(safe-area-inset-top, 10px); left: 10px; right: 10px; 
+            display: none; justify-content: space-between; font-size: 0.75rem; z-index: 150; pointer-events: none; 
+        }
+        #hud span { background: rgba(13, 17, 23, 0.8); padding: 8px 15px; border-radius: 30px; border: 1px solid var(--platform-border); backdrop-filter: blur(5px); }
+
+        .opt-btn { 
+            background: rgba(33, 38, 45, 0.9); border: 1px solid var(--platform-border); 
+            color: white; padding: 18px; border-radius: 10px; text-align: left; 
+            font-size: 1rem; margin-bottom: 8px; width: 100%;
         }
 
-        .screen {
-            pointer-events: auto;
-            display: none;
-            flex-direction: column;
-            gap: 12px;
-            background: var(--card-bg);
-            border: 1px solid var(--platform-border);
-            border-radius: 16px;
-            padding: 25px;
-            width: 95%;
-            max-width: 400px;
-            backdrop-filter: blur(15px);
-            box-shadow: 0 10px 50px rgba(0,0,0,0.8);
+        #mobile-controls { 
+            position: absolute; bottom: env(safe-area-inset-bottom, 30px); 
+            left: 20px; right: 20px; display: flex; justify-content: space-between; 
+            z-index: 300; pointer-events: none; 
         }
-
-        .screen.active {
-            display: flex;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: scale(0.95);
-                opacity: 0;
-            }
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-
-        h1 {
-            color: var(--cyan);
-            text-align: center;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px var(--cyan-glow);
-            font-size: 2rem;
-        }
-
-        h2 {
-            text-align: center;
-            color: var(--cyan);
-            font-size: 1.4rem;
-        }
-
-        input {
-            width: 100%;
-            padding: 16px;
-            background: rgba(0,0,0,0.6);
-            border: 2px solid var(--platform-border);
-            border-radius: 12px;
-            color: white;
-            font-size: 1.1rem;
-            text-align: center;
-            outline: none;
-        }
-
-        .btn {
-            background: var(--cyan);
-            color: #000;
-            border: none;
-            padding: 18px;
-            border-radius: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 1.1rem;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        .btn-secondary {
-            background: transparent;
-            border: 1px solid var(--platform-border);
-            color: var(--text);
-            padding: 12px;
-            font-size: 0.85rem;
-        }
-
-        #hud {
-            position: absolute;
-            top: env(safe-area-inset-top, 10px);
-            left: 10px;
-            right: 10px;
-            display: none;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            z-index: 150;
-            pointer-events: none;
-        }
-
-        #hud span {
-            background: rgba(13,17,23,0.8);
-            padding: 8px 15px;
-            border-radius: 30px;
-            border: 1px solid var(--platform-border);
-            backdrop-filter: blur(5px);
-        }
-
-        .opt-btn {
-            background: rgba(33,38,45,0.9);
-            border: 1px solid var(--platform-border);
-            color: white;
-            padding: 18px;
-            border-radius: 10px;
-            text-align: left;
-            font-size: 1rem;
-            margin-bottom: 8px;
-            width: 100%;
-        }
-
-        #mobile-controls {
-            position: absolute;
-            bottom: env(safe-area-inset-bottom, 30px);
-            left: 20px;
-            right: 20px;
-            display: flex;
-            justify-content: space-between;
-            z-index: 300;
-            pointer-events: none;
-        }
-
-        .ctrl-group {
-            display: flex;
-            gap: 20px;
-            pointer-events: none;
-        }
-
-        .ctrl-btn {
-            width: 80px;
-            height: 80px;
-            background: rgba(0,242,255,0.15);
-            border: 3px solid var(--cyan);
-            border-radius: 50%;
-            color: var(--cyan);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            pointer-events: auto;
-            font-size: 2.2rem;
-            touch-action: none;
+        .ctrl-group { display: flex; gap: 20px; pointer-events: none; }
+        .ctrl-btn { 
+            width: 80px; height: 80px; background: rgba(0,242,255,0.15); 
+            border: 3px solid var(--cyan); border-radius: 50%; color: var(--cyan); 
+            display: flex; justify-content: center; align-items: center; 
+            pointer-events: auto; font-size: 2.2rem; 
+            touch-action: none; 
             backdrop-filter: blur(4px);
         }
+        .ctrl-btn:active { background: var(--cyan); color: #000; transform: scale(0.9); }
+        #btn-up { border-color: var(--success); color: var(--success); width: 90px; height: 90px; }
+        #btn-up:active { background: var(--success); color: #000; }
 
-        .ctrl-btn:active {
-            background: var(--cyan);
-            color: #000;
-            transform: scale(0.9);
-        }
-
-        #btn-up {
-            border-color: var(--success);
-            color: var(--success);
-            width: 90px;
-            height: 90px;
-        }
-
-        #btn-up:active {
-            background: var(--success);
-            color: #000;
-        }
     </style>
 </head>
-
 <body>
 
 <div id="canvas-container">
@@ -258,69 +112,38 @@
 </div>
 
 <div id="ui-layer">
-
     <div id="menu-screen" class="screen active">
         <h1>BRAIN-STORM</h1>
-
-        <p id="hs-text" style="text-align:center;color:#8b949e;font-size:0.9rem;margin-bottom:5px;"></p>
-
+        <p id="hs-text" style="text-align: center; color: #8b949e; font-size: 0.9rem; margin-bottom: 5px;"></p>
         <input type="text" id="username" placeholder="Username..." maxlength="12">
-
         <button class="btn" onclick="startGame()">Initialize Mission</button>
-
-        <button class="btn btn-secondary" onclick="toggleFullscreen()">
-            Toggle Fullscreen View
-        </button>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <button class="btn btn-secondary" onclick="showScreen('how-to')">
-                How to Play
-            </button>
-
-            <button class="btn btn-secondary" onclick="showScreen('credits')">
-                Credits
-            </button>
+        <button class="btn btn-secondary" onclick="toggleFullscreen()">Toggle Fullscreen View</button>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <button class="btn btn-secondary" onclick="showScreen('how-to')">How to Play</button>
+            <button class="btn btn-secondary" onclick="showScreen('credits')">Credits</button>
         </div>
     </div>
 
     <div id="how-to" class="screen">
         <h2>MISSION GUIDE</h2>
-
         <p>• Use On-Screen buttons to move.</p>
         <p>• Reach the <span style="color:var(--cyan)">Blue Terminal</span> to advance.</p>
         <p>• Answer correctly to jump sectors.</p>
-
-        <button class="btn" onclick="showScreen('menu-screen')">
-            Back
-        </button>
+        <button class="btn" onclick="showScreen('menu-screen')">Back</button>
     </div>
 
     <div id="credits" class="screen">
         <h2>SYSTEM CREDITS</h2>
-
-        <p style="font-size:1.2rem;color:var(--cyan);text-align:center;">
-            Rehan
-        </p>
-
-        <p style="text-align:center;color:#8b949e;">
-            Lecturer from UTAS
-        </p>
-
-        <button class="btn btn-secondary" onclick="showScreen('menu-screen')">
-            Back
-        </button>
+        <p style="font-size: 1.2rem; color: var(--cyan); text-align: center;">Rehan</p>
+        <p style="text-align: center; color: #8b949e;">Lecturer from UTAS</p>
+        <button class="btn btn-secondary" onclick="showScreen('menu-screen')">Back</button>
     </div>
 
     <div id="quiz-screen" class="screen">
-        <h2 style="color:var(--cyan);margin-bottom:15px;">
-            TERMINAL ACCESS
-        </h2>
-
-        <p id="q-text" style="margin-bottom:20px;font-size:1.1rem;line-height:1.4;"></p>
-
+        <h2 style="color: var(--cyan); margin-bottom: 15px;">TERMINAL ACCESS</h2>
+        <p id="q-text" style="margin-bottom: 20px; font-size: 1.1rem; line-height: 1.4;"></p>
         <div id="opt-box"></div>
     </div>
-
 </div>
 
 <div id="mobile-controls" style="display:none;">
@@ -328,131 +151,257 @@
         <div class="ctrl-btn" id="btn-left">←</div>
         <div class="ctrl-btn" id="btn-right">→</div>
     </div>
-
     <div class="ctrl-btn" id="btn-up">↑</div>
 </div>
 
 <script>
-
-const AU = new (window.AudioContext || window.webkitAudioContext)();
-
-function sfx(f, t, type='square', v=0.1){
-    try{
-        const osc = AU.createOscillator();
-        const gain = AU.createGain();
-
-        osc.type = type;
-        osc.frequency.setValueAtTime(f, AU.currentTime);
-
-        gain.gain.setValueAtTime(v, AU.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, AU.currentTime + t);
-
-        osc.connect(gain);
-        gain.connect(AU.destination);
-
-        osc.start();
-        osc.stop(AU.currentTime + t);
-    } catch(e){}
-}
-
-const questions = [
-    { q: "What is the Latin root of the word 'Market'?", o: ["Mercato", "Tradeus", "Mercatus", "Marketus"], a: 2 },
-    { q: "A market consists of all potential customers sharing a particular:", o: ["Address", "Need or Want", "Bank Account", "Nationality"], a: 1 },
-    { q: "In a 'Buyer's Market', who holds the power?", o: ["Sellers", "Governments", "Buyers", "Manufacturers"], a: 2 },
-    { q: "The 'Exchange' process requires at least how many parties?", o: ["One", "Two", "Three", "Five"], a: 1 },
-    { q: "Which is a 'Place' market example?", o: ["Stock Market", "eBay", "Regional Trade Fair", "Digital Currency"], a: 2 },
-    { q: "Marketing is a social process by which individuals obtain what they need through:", o: ["Theft", "Creating/Exchanging value", "Force", "Saving"], a: 1 },
-    { q: "What is the primary goal of the 'Marketing Concept'?", o: ["Maximize Sales", "Customer Satisfaction", "Mass Production", "Product Variety"], a: 1 },
-    { q: "The 'Production Concept' focuses on:", o: ["Quality", "Customer Service", "Affordability and Availability", "Heavy Advertising"], a: 2 },
-    { q: "The 'Societal Marketing Concept' balances profits, consumer wants, and:", o: ["Shareholder interests", "Society's well-being", "Competitor prices", "Labor unions"], a: 1 },
-    { q: "Which concept assumes consumers will favor products with the most quality?", o: ["Selling Concept", "Product Concept", "Marketing Concept", "Global Concept"], a: 1 },
-    { q: "The 'Selling Concept' is typically practiced with what kind of goods?", o: ["Daily Groceries", "Unsought Goods", "Luxury Cars", "High-tech Gadgets"], a: 1 },
-    { q: "What is the first step in the Marketing Process?", o: ["Capture Value", "Build Relationships", "Understand the Marketplace", "Design Strategy"], a: 2 },
-    { q: "What does the 'S' in STP stand for?", o: ["Sales", "Systems", "Segmentation", "Sustainability"], a: 2 },
-    { q: "Which is a 'Demographic' segmentation variable?", o: ["Personality", "Lifestyle", "Age", "Climate"], a: 2 },
-    { q: "Psychographic segmentation is based on:", o: ["Country", "Income", "Social Class/Lifestyle", "Usage Rate"], a: 2 },
-    { q: "What is 'Positioning'?", o: ["Moving goods to stores", "The place a product occupies in minds", "Geographic location", "Setting the price"], a: 1 },
-    { q: "Targeting involves evaluating each segment's:", o: ["History", "Attractiveness", "Name", "Legal status"], a: 1 },
-    { q: "Volvo is positioned on 'Safety'. This is an example of:", o: ["Price positioning", "Benefit positioning", "User positioning", "Competitor positioning"], a: 1 },
-    { q: "The 'Marketing Mix' is also known as the:", o: ["4 Ps", "4 Cs", "4 Os", "4 Rs"], a: 0 },
-    { q: "Which 'P' refers to the communication tools used by a company?", o: ["Product", "Price", "Place", "Promotion"], a: 3 },
-    { q: "What is the 'Product' in marketing?", o: ["Only physical objects", "Anything offered to a market for attention/use", "Just the brand name", "The warehouse stock"], a: 1 },
-    { q: "Discounts and Credit Terms fall under which 'P'?", o: ["Product", "Promotion", "Price", "Place"], a: 2 },
-    { q: "Logistics and Inventory management are parts of:", o: ["Promotion", "Product", "Place", "Personnel"], a: 2 },
-    { q: "Public Relations is a sub-element of:", o: ["Price", "Place", "Promotion", "Product"], a: 2 },
-    { q: "What is the Microenvironment?", o: ["Factors close to the company", "Large societal forces", "Global economic trends", "International laws"], a: 0 },
-    { q: "Which is a 'Macroenvironment' factor?", o: ["Suppliers", "Competitors", "Technological forces", "Customers"], a: 2 },
-    { q: "The 'Publics' in the microenvironment include:", o: ["Financial and Media publics", "The Climate", "Political parties", "Only the CEO"], a: 0 },
-    { q: "Demography is the study of:", o: ["Rocks", "Human populations", "Animal behavior", "Computer code"], a: 1 },
-    { q: "The 'Economic Environment' affects consumer:", o: ["Religion", "Purchasing power", "Education", "Height"], a: 1 },
-    { q: "Legislation affecting business is part of the:", o: ["Natural environment", "Political environment", "Cultural environment", "Technological environment"], a: 1 },
-    { q: "Consumer Buyer Behavior refers to the buying behavior of:", o: ["Businesses", "Final consumers", "Wholesalers", "Governments"], a: 1 },
-    { q: "What is the first stage of the Buyer Decision Process?", o: ["Information Search", "Need Recognition", "Purchase Decision", "Evaluation"], a: 1 },
-    { q: "Cognitive Dissonance occurs in which stage?", o: ["Information Search", "Post-purchase Behavior", "Evaluation", "Need Recognition"], a: 1 },
-    { q: "A 'Reference Group' is a:", o: ["Social factor", "Personal factor", "Psychological factor", "Cultural factor"], a: 0 },
-    { q: "What is 'Maslow's' highest level of need?", o: ["Social", "Safety", "Self-actualization", "Esteem"], a: 2 },
-    { q: "The set of basic values learned from family/institutions is:", o: ["Subculture", "Culture", "Social Class", "Perception"], a: 1 },
-    { q: "Business Buyer Behavior involves buying for:", o: ["Personal use", "Further processing or resale", "Gifts", "Hobbies"], a: 1 },
-    { q: "In a 'Straight Rebuy', the buyer:", o: ["Modifies specs", "Reorders without modification", "Searches for new suppliers", "Buys for the first time"], a: 1 },
-    { q: "The 'Buying Center' is:", o: ["A physical building", "The decision-making unit of an organization", "A retail mall", "A logistics hub"], a: 1 },
-    { q: "Which is a major influence on business buyers?", o: ["Individual factors", "Organizational factors", "Environmental factors", "All of the above"], a: 3 },
-    { q: "What is 'E-procurement'?", o: ["Buying from a physical store", "Online purchasing", "Manual paper bidding", "Face-to-face negotiation"], a: 1 },
-    { q: "The 'New Task' buying situation is:", o: ["Routine", "Complex and requires research", "Fast and easy", "Automatic"], a: 1 },
-    { q: "Competitive Advantage is gained by offering consumers:", o: ["Higher prices", "Greater value", "Less information", "Fewer features"], a: 1 },
-    { q: "A 'Competitor Map' helps identify:", o: ["Employee names", "Direct and indirect competitors", "Stock prices", "Factory locations"], a: 1 },
-    { q: "What is 'Benchmarking'?", o: ["Setting a stool height", "Comparing products against leaders", "Firing staff", "Changing the logo"], a: 1 },
-    { q: "A 'Market Leader' has the:", o: ["Lowest sales", "Largest market share", "Fewest employees", "Smallest budget"], a: 1 },
-    { q: "Niche marketing focuses on:", o: ["The whole market", "Small, specific segments", "International trade only", "Mass production"], a: 1 },
-    { q: "Michael Porter’s three basic strategies include 'Cost Leadership', 'Differentiation', and:", o: ["Pricing", "Focus", "Advertising", "Distribution"], a: 1 },
-    { q: "A company that follows the leader's moves is a:", o: ["Market Follower", "Market Challenger", "Market Nicher", "Market Boss"], a: 0 },
-    { q: "The 'Blue Ocean Strategy' aims to:", o: ["Fight in crowded markets", "Create uncontested market space", "Increase taxes", "Stop exports"], a: 1 }
-];
-
-function toggleFullscreen(){
-
-    const elem = document.documentElement;
-
-    if(
-        !document.fullscreenElement &&
-        !document.webkitFullscreenElement &&
-        !document.msFullscreenElement
-    ){
-
-        if(elem.requestFullscreen){
-            elem.requestFullscreen();
-        }
-        else if(elem.webkitRequestFullscreen){
-            elem.webkitRequestFullscreen();
-        }
-        else if(elem.msRequestFullscreen){
-            elem.msRequestFullscreen();
-        }
-        else{
-            document.body.classList.add("fake-fullscreen");
-            window.scrollTo(0,1);
-        }
-
-    } else {
-
-        if(document.exitFullscreen){
-            document.exitFullscreen();
-        }
-        else if(document.webkitExitFullscreen){
-            document.webkitExitFullscreen();
-        }
-        else if(document.msExitFullscreen){
-            document.msExitFullscreen();
-        }
-
-        document.body.classList.remove("fake-fullscreen");
+    const AU = new (window.AudioContext || window.webkitAudioContext)();
+    function sfx(f, t, type='square', v=0.1) {
+        try {
+            const osc = AU.createOscillator(); const gain = AU.createGain();
+            osc.type = type; osc.frequency.setValueAtTime(f, AU.currentTime);
+            gain.gain.setValueAtTime(v, AU.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, AU.currentTime + t);
+            osc.connect(gain); gain.connect(AU.destination); osc.start(); osc.stop(AU.currentTime + t);
+        } catch(e){}
     }
 
-    setTimeout(() => {
-        resize();
-    }, 500);
-}
+    const questions = [
+        { q: "What is the Latin root of the word 'Market'?", o: ["Mercato", "Tradeus", "Mercatus", "Marketus"], a: 2 },
+        { q: "A market consists of all potential customers sharing a particular:", o: ["Address", "Need or Want", "Bank Account", "Nationality"], a: 1 },
+        { q: "In a 'Buyer's Market', who holds the power?", o: ["Sellers", "Governments", "Buyers", "Manufacturers"], a: 2 },
+        { q: "The 'Exchange' process requires at least how many parties?", o: ["One", "Two", "Three", "Five"], a: 1 },
+        { q: "Which is a 'Place' market example?", o: ["Stock Market", "eBay", "Regional Trade Fair", "Digital Currency"], a: 2 },
+        { q: "Marketing is a social process by which individuals obtain what they need through:", o: ["Theft", "Creating/Exchanging value", "Force", "Saving"], a: 1 },
+        { q: "What is the primary goal of the 'Marketing Concept'?", o: ["Maximize Sales", "Customer Satisfaction", "Mass Production", "Product Variety"], a: 1 },
+        { q: "The 'Production Concept' focuses on:", o: ["Quality", "Customer Service", "Affordability and Availability", "Heavy Advertising"], a: 2 },
+        { q: "The 'Societal Marketing Concept' balances profits, consumer wants, and:", o: ["Shareholder interests", "Society's well-being", "Competitor prices", "Labor unions"], a: 1 },
+        { q: "Which concept assumes consumers will favor products with the most quality?", o: ["Selling Concept", "Product Concept", "Marketing Concept", "Global Concept"], a: 1 },
+        { q: "The 'Selling Concept' is typically practiced with what kind of goods?", o: ["Daily Groceries", "Unsought Goods", "Luxury Cars", "High-tech Gadgets"], a: 1 },
+        { q: "What is the first step in the Marketing Process?", o: ["Capture Value", "Build Relationships", "Understand the Marketplace", "Design Strategy"], a: 2 },
+        { q: "What does the 'S' in STP stand for?", o: ["Sales", "Systems", "Segmentation", "Sustainability"], a: 2 },
+        { q: "Which is a 'Demographic' segmentation variable?", o: ["Personality", "Lifestyle", "Age", "Climate"], a: 2 },
+        { q: "Psychographic segmentation is based on:", o: ["Country", "Income", "Social Class/Lifestyle", "Usage Rate"], a: 2 },
+        { q: "What is 'Positioning'?", o: ["Moving goods to stores", "The place a product occupies in minds", "Geographic location", "Setting the price"], a: 1 },
+        { q: "Targeting involves evaluating each segment's:", o: ["History", "Attractiveness", "Name", "Legal status"], a: 1 },
+        { q: "Volvo is positioned on 'Safety'. This is an example of:", o: ["Price positioning", "Benefit positioning", "User positioning", "Competitor positioning"], a: 1 },
+        { q: "The 'Marketing Mix' is also known as the:", o: ["4 Ps", "4 Cs", "4 Os", "4 Rs"], a: 0 },
+        { q: "Which 'P' refers to the communication tools used by a company?", o: ["Product", "Price", "Place", "Promotion"], a: 3 },
+        { q: "What is the 'Product' in marketing?", o: ["Only physical objects", "Anything offered to a market for attention/use", "Just the brand name", "The warehouse stock"], a: 1 },
+        { q: "Discounts and Credit Terms fall under which 'P'?", o: ["Product", "Promotion", "Price", "Place"], a: 2 },
+        { q: "Logistics and Inventory management are parts of:", o: ["Promotion", "Product", "Place", "Personnel"], a: 2 },
+        { q: "Public Relations is a sub-element of:", o: ["Price", "Place", "Promotion", "Product"], a: 2 },
+        { q: "What is the Microenvironment?", o: ["Factors close to the company", "Large societal forces", "Global economic trends", "International laws"], a: 0 },
+        { q: "Which is a 'Macroenvironment' factor?", o: ["Suppliers", "Competitors", "Technological forces", "Customers"], a: 2 },
+        { q: "The 'Publics' in the microenvironment include:", o: ["Financial and Media publics", "The Climate", "Political parties", "Only the CEO"], a: 0 },
+        { q: "Demography is the study of:", o: ["Rocks", "Human populations", "Animal behavior", "Computer code"], a: 1 },
+        { q: "The 'Economic Environment' affects consumer:", o: ["Religion", "Purchasing power", "Education", "Height"], a: 1 },
+        { q: "Legislation affecting business is part of the:", o: ["Natural environment", "Political environment", "Cultural environment", "Technological environment"], a: 1 },
+        { q: "Consumer Buyer Behavior refers to the buying behavior of:", o: ["Businesses", "Final consumers", "Wholesalers", "Governments"], a: 1 },
+        { q: "What is the first stage of the Buyer Decision Process?", o: ["Information Search", "Need Recognition", "Purchase Decision", "Evaluation"], a: 1 },
+        { q: "Cognitive Dissonance occurs in which stage?", o: ["Information Search", "Post-purchase Behavior", "Evaluation", "Need Recognition"], a: 1 },
+        { q: "A 'Reference Group' is a:", o: ["Social factor", "Personal factor", "Psychological factor", "Cultural factor"], a: 0 },
+        { q: "What is 'Maslow's' highest level of need?", o: ["Social", "Safety", "Self-actualization", "Esteem"], a: 2 },
+        { q: "The set of basic values learned from family/institutions is:", o: ["Subculture", "Culture", "Social Class", "Perception"], a: 1 },
+        { q: "Business Buyer Behavior involves buying for:", o: ["Personal use", "Further processing or resale", "Gifts", "Hobbies"], a: 1 },
+        { q: "In a 'Straight Rebuy', the buyer:", o: ["Modifies specs", "Reorders without modification", "Searches for new suppliers", "Buys for the first time"], a: 1 },
+        { q: "The 'Buying Center' is:", o: ["A physical building", "The decision-making unit of an organization", "A retail mall", "A logistics hub"], a: 1 },
+        { q: "Which is a major influence on business buyers?", o: ["Individual factors", "Organizational factors", "Environmental factors", "All of the above"], a: 3 },
+        { q: "What is 'E-procurement'?", o: ["Buying from a physical store", "Online purchasing", "Manual paper bidding", "Face-to-face negotiation"], a: 1 },
+        { q: "The 'New Task' buying situation is:", o: ["Routine", "Complex and requires research", "Fast and easy", "Automatic"], a: 1 },
+        { q: "Competitive Advantage is gained by offering consumers:", o: ["Higher prices", "Greater value", "Less information", "Fewer features"], a: 1 },
+        { q: "A 'Competitor Map' helps identify:", o: ["Employee names", "Direct and indirect competitors", "Stock prices", "Factory locations"], a: 1 },
+        { q: "What is 'Benchmarking'?", o: ["Setting a stool height", "Comparing products against leaders", "Firing staff", "Changing the logo"], a: 1 },
+        { q: "A 'Market Leader' has the:", o: ["Lowest sales", "Largest market share", "Fewest employees", "Smallest budget"], a: 1 },
+        { q: "Niche marketing focuses on:", o: ["The whole market", "Small, specific segments", "International trade only", "Mass production"], a: 1 },
+        { q: "Michael Porter’s three basic strategies include 'Cost Leadership', 'Differentiation', and:", o: ["Pricing", "Focus", "Advertising", "Distribution"], a: 1 },
+        { q: "A company that follows the leader's moves is a:", o: ["Market Follower", "Market Challenger", "Market Nicher", "Market Boss"], a: 0 },
+        { q: "The 'Blue Ocean Strategy' aims to:", o: ["Fight in crowded markets", "Create uncontested market space", "Increase taxes", "Stop exports"], a: 1 }
+    ];
 
+    const gCanvas = document.getElementById('gameCanvas');
+    const bCanvas = document.getElementById('bgCanvas');
+    const gctx = gCanvas.getContext('2d');
+    const bctx = bCanvas.getContext('2d');
+
+    let state = 'MENU', lives = 3, sector = 1, cameraX = 0, username = "", checkpointRotation = 0;
+    let loopID;
+    let best = localStorage.getItem('bs_best') || 1;
+    document.getElementById('hs-text').innerText = `RECORD: SECTOR ${best}`;
+
+    const player = { x: 100, y: 0, w: 28, h: 28, dx: 0, dy: 0, speed: 6.5, gravity: 0.6, jPower: -12, grounded: false, canDJ: true, trail: [], lastFace: 1 };
+    let platforms = [], spikes = [], checkpoints = [], goal = { x: 0, y: 0 }, lastCheck = { x: 100, y: 0 };
+    const keys = { left: false, right: false };
+
+    // POKI-STYLE PSEUDO-FULLSCREEN FOR IPHONE
+    function toggleFullscreen() {
+        const container = document.getElementById('canvas-container');
+        
+        // Attempt Native API first (Android/PC)
+        if (container.requestFullscreen) {
+            if (!document.fullscreenElement) container.requestFullscreen();
+            else document.exitFullscreen();
+        } 
+        // Attempt Webkit API (iOS Safari)
+        else if (container.webkitRequestFullscreen) {
+            if (!document.webkitFullscreenElement) container.webkitRequestFullscreen();
+            else document.webkitExitFullscreen();
+        } 
+        // Fallback: Manual CSS Fullscreen for Safari
+        else {
+            if (window.innerHeight < screen.height) {
+                window.scrollTo(0, 1);
+                document.documentElement.style.height = "100vh";
+                document.body.style.height = "100vh";
+            }
+        }
+        setTimeout(resize, 300);
+    }
+
+    function resize() { 
+        gCanvas.width = bCanvas.width = window.innerWidth; 
+        gCanvas.height = bCanvas.height = window.innerHeight; 
+        drawStars(); 
+    }
+    window.onresize = resize; resize();
+
+    function jump() {
+        if(player.grounded) { player.dy = player.jPower; player.grounded = false; player.canDJ = true; sfx(400, 0.1); }
+        else if(player.canDJ) { player.dy = player.jPower * 0.85; player.canDJ = false; sfx(600, 0.1); }
+    }
+
+    const setupControls = () => {
+        const btnL = document.getElementById('btn-left');
+        const btnR = document.getElementById('btn-right');
+        const btnU = document.getElementById('btn-up');
+
+        const startMove = (k) => { keys[k] = true; player.lastFace = (k === 'left' ? -1 : 1); };
+        const endMove = (k) => { keys[k] = false; };
+
+        btnL.addEventListener('touchstart', (e) => { e.preventDefault(); startMove('left'); }, {passive: false});
+        btnL.addEventListener('touchend', (e) => { e.preventDefault(); endMove('left'); }, {passive: false});
+        
+        btnR.addEventListener('touchstart', (e) => { e.preventDefault(); startMove('right'); }, {passive: false});
+        btnR.addEventListener('touchend', (e) => { e.preventDefault(); endMove('right'); }, {passive: false});
+        
+        btnU.addEventListener('touchstart', (e) => { e.preventDefault(); jump(); }, {passive: false});
+    };
+    setupControls();
+
+    function drawStars() {
+        bctx.fillStyle = '#000'; bctx.fillRect(0,0,bCanvas.width, bCanvas.height);
+        for(let i=0; i<80; i++) {
+            bctx.fillStyle = `rgba(255,255,255,${Math.random()})`;
+            bctx.beginPath(); bctx.arc(Math.random()*bCanvas.width, Math.random()*bCanvas.height, Math.random()*1.5, 0, Math.PI*2); bctx.fill();
+        }
+    }
+
+    function generateLevel() {
+        spikes = []; checkpoints = [];
+        platforms = [{ x: 0, y: gCanvas.height-100, w: 500, h: 100 }];
+        let curX = 500;
+        for(let i=0; i<25; i++) {
+            let gap = 130 + Math.random()*90;
+            let width = 140 + Math.random()*160;
+            let y = (gCanvas.height-140) - (Math.random()*200);
+            if(y < 150) y = 150;
+            const plat = { x: curX+gap, y: y, w: width, h: 35 };
+            platforms.push(plat);
+            if(i % 5 === 0 && i !== 0) checkpoints.push({ x: plat.x + plat.w/2, y: plat.y - 40, active: false });
+            else if(Math.random() < 0.45 && i > 1) spikes.push({ x: plat.x + (plat.w/2) - 12, y: plat.y - 20, w: 24, h: 20 });
+            curX += gap + width;
+        }
+        goal = { x: curX + 180, y: gCanvas.height-100 };
+        player.x = lastCheck.x; player.y = lastCheck.y;
+    }
+
+    function loop() {
+        if(state !== 'PLAYING') return;
+        checkpointRotation += 0.05;
+        if(keys.left) player.dx = -player.speed; else if(keys.right) player.dx = player.speed; else player.dx *= 0.8;
+        player.dy += player.gravity; player.x += player.dx; player.y += player.dy;
+        player.trail.push({x: player.x, y: player.y}); if(player.trail.length > 8) player.trail.shift();
+        player.grounded = false;
+        platforms.forEach(p => {
+            if(player.x < p.x + p.w && player.x + player.w > p.x && player.y + player.h > p.y && player.y + player.h < p.y + p.h + 10) {
+                if(player.dy > 0) { player.y = p.y - player.h; player.dy = 0; player.grounded = true; player.canDJ = true; }
+            }
+        });
+        checkpoints.forEach(c => {
+            if(!c.active && Math.hypot(player.x + 14 - c.x, player.y + 14 - c.y) < 40) { c.active = true; lastCheck = { x: c.x - 14, y: c.y - 14 }; sfx(900, 0.2); }
+        });
+        spikes.forEach(s => { if(player.x < s.x + s.w - 4 && player.x + player.w > s.x + 4 && player.y < s.y + s.h && player.y + player.h > s.y + 4) handleHit(); });
+        if(player.y > gCanvas.height + 100) handleHit();
+        if(player.x > goal.x) triggerQuiz();
+        cameraX += ((player.x - gCanvas.width/3) - cameraX) * 0.1;
+        if(cameraX < 0) cameraX = 0;
+        render();
+        loopID = requestAnimationFrame(loop);
+    }
+
+    function render() {
+        gctx.clearRect(0,0, gCanvas.width, gCanvas.height);
+        gctx.save(); gctx.translate(-cameraX, 0);
+        platforms.forEach(p => { gctx.fillStyle = '#161b22'; gctx.fillRect(p.x, p.y, p.w, p.h); gctx.strokeStyle='#30363d'; gctx.strokeRect(p.x, p.y, p.w, p.h);});
+        checkpoints.forEach(c => {
+            gctx.save(); gctx.translate(c.x, c.y); gctx.rotate(checkpointRotation);
+            gctx.strokeStyle = c.active ? '#00ff88' : '#444'; gctx.lineWidth = 3;
+            gctx.beginPath(); gctx.moveTo(0, -15); gctx.lineTo(12, 8); gctx.lineTo(-12, 8); gctx.closePath(); gctx.stroke();
+            gctx.restore();
+        });
+        spikes.forEach(s => { gctx.fillStyle = '#ff4d4d'; gctx.beginPath(); gctx.moveTo(s.x, s.y+s.h); gctx.lineTo(s.x+s.w/2, s.y); gctx.lineTo(s.x+s.w, s.y+s.h); gctx.fill(); });
+        gctx.fillStyle = '#00f2ff'; gctx.fillRect(goal.x, 0, 8, gCanvas.height);
+        player.trail.forEach((t, i) => { gctx.globalAlpha = i/15; gctx.fillStyle = '#00f2ff'; gctx.fillRect(t.x, t.y, player.w, player.h); });
+        gctx.globalAlpha = 1; gctx.fillStyle = '#00f2ff'; gctx.fillRect(player.x, player.y, player.w, player.h);
+        gctx.fillStyle = '#000'; gctx.fillRect(player.lastFace === 1 ? player.x + 18 : player.x + 4, player.y + 6, 6, 6);
+        gctx.restore();
+    }
+
+    function handleHit() {
+        sfx(80, 0.2, 'sawtooth'); lives--; updateHUD();
+        if(lives <= 0) { lives = 3; lastCheck = { x: 100, y: gCanvas.height-200 }; sector=1; generateLevel(); updateHUD(); showScreen('menu-screen'); state='MENU'; cancelAnimationFrame(loopID);}
+        else { player.x = lastCheck.x; player.y = lastCheck.y; player.dx = player.dy = 0; }
+    }
+
+    function startGame() {
+        cancelAnimationFrame(loopID);
+        AU.resume();
+        username = document.getElementById('username').value.trim() || "REHAN";
+        lives = 3; sector = 1; lastCheck = { x: 100, y: gCanvas.height-200 };
+        showScreen(null); document.getElementById('hud').style.display = 'flex';
+        state = 'PLAYING'; generateLevel(); updateHUD(); loop();
+    }
+
+    function triggerQuiz() {
+        cancelAnimationFrame(loopID);
+        state = 'QUIZ'; showScreen('quiz-screen');
+        const q = questions[Math.floor(Math.random()*questions.length)];
+        document.getElementById('q-text').innerText = q.q;
+        const box = document.getElementById('opt-box'); box.innerHTML = '';
+        q.o.forEach((opt, i) => {
+            const b = document.createElement('button'); b.className = 'opt-btn'; b.innerText = opt;
+            b.onclick = () => {
+                if(i === q.a) { 
+                    sfx(1200, 0.2); sector++; 
+                    if(sector > best) { best = sector; localStorage.setItem('bs_best', best); document.getElementById('hs-text').innerText = `RECORD: SECTOR ${best}`;} 
+                    showScreen(null); state = 'PLAYING'; generateLevel(); updateHUD(); loop();
+                } else { sfx(50, 0.4, 'sawtooth'); startGame(); }
+            };
+            box.appendChild(b);
+        });
+    }
+
+    function updateHUD() { 
+        document.getElementById('hud-user').innerText = username; 
+        document.getElementById('hud-level').innerText = sector; 
+        document.getElementById('hud-lives').innerText = lives; 
+    }
+    
+    function showScreen(id) { 
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); 
+        if(id) document.getElementById(id).classList.add('active'); 
+        document.getElementById('ui-layer').style.pointerEvents = id ? 'auto' : 'none'; 
+        document.getElementById('mobile-controls').style.display = id ? 'none' : 'flex';
+    }
 </script>
-
 </body>
 </html>
